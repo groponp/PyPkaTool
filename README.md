@@ -23,19 +23,35 @@ Output per run:
 
 Requires [conda](https://docs.conda.io/) (miniconda or anaconda) on `PATH`.
 
-PyPKA's compiled Poisson-Boltzmann backend (DelPhi4py) needs `numpy<2` and
-`libgfortran4=7.5.0` specifically — these aren't arbitrary pins, the compiled
-binary was built against NumPy's 1.x C API and links `GFORTRAN_7`, which
-`libgfortran.so.5` (GFortran 10+) doesn't export. PyPKA also shells out to a
-bare `python2.7` interpreter internally (via `pdbmender`'s vendored
-`pdb2pqr.py`), so a second, minimal Python 2.7 environment is required.
+This project uses **two separate, independent conda environments** — one is
+not created "inside" the other, and they serve different purposes:
+
+| Environment | Created from | Do you activate it? |
+|---|---|---|
+| `pypkatool` | `environment.yml` | **Yes — every time** you run the tool: `conda activate pypkatool` |
+| `py27` | `environment-py27.yml` | **No, never.** `pypkatool` finds it on disk automatically at runtime. |
+
+Why `py27` exists at all: PyPKA's compiled Poisson-Boltzmann backend
+(DelPhi4py) needs `numpy<2` and `libgfortran4=7.5.0` in the main environment
+(the compiled binary was built against NumPy's 1.x C API and links
+`GFORTRAN_7`, which `libgfortran.so.5` / GFortran 10+ doesn't export) — that
+part lives in `pypkatool`. Separately, PyPKA also shells out to a bare
+`python2.7` interpreter internally (via `pdbmender`'s vendored `pdb2pqr.py`),
+which cannot coexist with Python 3 in the same environment, hence the second,
+minimal, interpreter-only environment.
+
+### One-time setup
 
 ```bash
-# 1. Main environment (Python 3.10 + PyPKA + pKAI)
+# 1. Create BOTH environments. Order doesn't matter, and it doesn't matter
+#    whether any environment is currently active: `conda env create` always
+#    builds a new, independent environment from scratch.
 conda env create -f environment.yml
-conda activate pypkatool
+conda env create -f environment-py27.yml
 
-# 2. Install pypkatool itself — pick ONE of the two:
+# 2. Activate the MAIN environment (py27 is never activated) and install
+#    pypkatool into it — pick ONE of the two:
+conda activate pypkatool
 
 # 2a. Editable install (recommended if you cloned this repo to modify or
 #     update it): the command reads pypkatool/ from this checkout directly,
@@ -47,17 +63,24 @@ pip install -e .
 #     environment's site-packages, same as any other pip package.
 pip install .
 
-# 3. Python 2.7 helper environment (PyPKA calls this internally; you never activate it)
-conda env create -f environment-py27.yml
-
-# 4. Verify
+# 3. Verify
 pypkatool --help
 ```
 
 `pypkatool` locates the Python 2.7 interpreter automatically by looking for a
-conda environment literally named `py27` under your home directory. If you
-name it something else, either rename it or prepend its `bin/` to `PATH`
-yourself before running `pypkatool run`.
+conda environment literally named `py27` under your home directory
+(`~/miniconda3/envs/py27/bin/python2.7` or `~/anaconda3/envs/py27/bin/python2.7`).
+If you named it something else, either rename it to `py27` or prepend its
+`bin/` to `PATH` yourself before running `pypkatool run`.
+
+### Every time you want to use it
+
+Only `pypkatool` needs activating — `py27` is "install once and forget":
+
+```bash
+conda activate pypkatool
+pypkatool run my_protein.pdb --ph 7.0
+```
 
 ## Usage
 
