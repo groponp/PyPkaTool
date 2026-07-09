@@ -15,7 +15,7 @@ channels:
 dependencies:
   - python=3.10
   # DelPhi4py (PyPKA's compiled Poisson-Boltzmann backend) was built against
-  # GFortran 7 (symbol GFORTRAN_7) and the NumPy 1.x C API — both pins below
+  # GFortran 7 (symbol GFORTRAN_7) and the NumPy 1.x C API - both pins below
   # are required, not just recommended.
   - libgfortran4=7.5.0
   - pip

@@ -13,16 +13,16 @@ titratable site's most probable tautomer onto a CHARMM36 residue/patch label
 PyPKA source, ``titsite.py::Titsite.getRefProtState()``, and against the
 signed atomic partial charges in the CHARMM36 ``.st`` tautomer files):
 
-* Cationic sites (``HIS``, ``LYS``, ``NTR``) — the *reference* tautomer
+* Cationic sites (``HIS``, ``LYS``, ``NTR``) - the *reference* tautomer
   (index ``N + 1``, where ``N`` is the number of regular tautomers) is the
   **protonated**, positively charged state.
-* Anionic sites (``ASP``, ``GLU``, ``CTR``, ``CYS``, ``TYR``, ``SER``) — the
+* Anionic sites (``ASP``, ``GLU``, ``CTR``, ``CYS``, ``TYR``, ``SER``) - the
   reference tautomer is the **deprotonated**, negatively charged state; the
   regular tautomers (1..N) are the protonated, neutral forms (e.g. COOH for
   ASP/GLU, SH for CYS, OH for TYR).
 
 This is the opposite assignment of what a naive reading of "reference =
-default" might suggest for anionic sites, and it is easy to get backwards —
+default" might suggest for anionic sites, and it is easy to get backwards -
 see :func:`_label` for the full mapping table.
 
 Usage:
@@ -49,7 +49,7 @@ from typing import Any
 
 __version__ = "1.0.0"
 
-# ── pKAI+ prerequisite (hard requirement — must be installed) ─────────────────
+# ── pKAI+ prerequisite (hard requirement - must be installed) ─────────────────
 
 def _require_pkai() -> None:
     """Abort import with an actionable message if the ``pkai`` package is missing.
@@ -67,7 +67,7 @@ def _require_pkai() -> None:
         raise RuntimeError(
             "pKAI is required but not installed.\n"
             "  pip install pKAI\n"
-            "pKAI+ cross-validation is mandatory — every output includes it."
+            "pKAI+ cross-validation is mandatory - every output includes it."
         )
 
 _require_pkai()
@@ -262,7 +262,7 @@ def _hh_probs(site_type: str, pka: float | None, ph: float, n_reg: int) -> list[
 
     :param site_type: ``"c"`` (cationic) or ``"a"`` (anionic).
     :type site_type: str
-    :param pka: Site pKa, or ``None`` if outside ``[0, 14)`` — in that case a
+    :param pka: Site pKa, or ``None`` if outside ``[0, 14)`` - in that case a
         uniform distribution is returned (protonation state is then decided
         by the caller from the boundary, not from this vector).
     :type pka: float | None
@@ -357,10 +357,10 @@ def validate_pdb(pdb_path: Path) -> None:
             f"(found: {sorted(residues)[:10]}). PyPKA requires a protein PDB."
         )
     if has_icode:
-        print(f"  Note: PDB has insertion codes — PyPKA will renumber residues internally.")
+        print(f"  Note: PDB has insertion codes - PyPKA will renumber residues internally.")
     if non_std:
         print(f"  Note: non-standard residues present (will be ignored by PyPKA): {non_std[:5]}")
-    print(f"  PDB OK — {len(atom_lines)} atoms, {len(chains)} chain(s): {sorted(chains)}")
+    print(f"  PDB OK - {len(atom_lines)} atoms, {len(chains)} chain(s): {sorted(chains)}")
 
 def _inject_py27() -> None:
     """Put a Python 2.7 interpreter on ``PATH`` if one isn't already there.
@@ -595,7 +595,7 @@ class MappedResidue:
     pct_protonated: float; pct_deprotonated: float
     charmm_label: str; rtf_available: bool; is_tie: bool
     tautomer_detail: str; needs_action: bool
-    # PyPKA source fields — kept for label-chain cross-validation
+    # PyPKA source fields - kept for label-chain cross-validation
     site_type: str = ""; mpt: int = 0; n_reg: int = 0
 
     def __post_init__(self):
@@ -613,11 +613,11 @@ def _label(resname: str, mpt: int, n_reg: int, site_type: str) -> str:
     PyPKA source and the CHARMM36 ``.st`` tautomer charge sets):
 
     * Cationic (``site_type == "c"``): reference = protonated =
-      the CHARMM *default* RESI (``LYS``, ``NTER``) — no patch needed.
+      the CHARMM *default* RESI (``LYS``, ``NTER``) - no patch needed.
       Non-reference = neutral = needs a patch (``LSN``, ``NNEU``).
     * Anionic (``site_type == "a"``): reference = deprotonated. For
       ``ASP``/``GLU``/``CTR`` the deprotonated, charged form *is* the CHARMM
-      default RESI (``ASP``, ``GLU``, ``CTER``) — no patch needed; the
+      default RESI (``ASP``, ``GLU``, ``CTER``) - no patch needed; the
       protonated form needs a patch (``ASPP``, ``GLUP``, ``CNEU``). For
       ``CYS``/``TYR``/``SER`` it is the opposite: the CHARMM default RESI is
       the *protonated* neutral form (``CYS``, ``TYR``, ``SER``), so the
@@ -780,7 +780,7 @@ def _his_pdb_signals(prot_pdb: Path) -> dict[tuple[str, int], tuple[str, str]]:
                         HD1 + HE2 both present    → HSP
                         neither present           → UNKNOWN
     Both signals must agree; if they disagree the atom-based label is used
-    (atoms are ground truth — the name field could be a PyPKA formatting bug).
+    (atoms are ground truth - the name field could be a PyPKA formatting bug).
 
     :param prot_pdb: PyPKA's output protonated PDB.
     :type prot_pdb: pathlib.Path
@@ -828,13 +828,13 @@ def reconcile_his_from_pdb(mapped: list[MappedResidue], prot_pdb: Path,
                             rtf: dict) -> list[MappedResidue]:
     """Override HIS labels using three independent signals.
 
-    Signal 1 — residue name field in protonated PDB (set by PyPKA's formatter).
-    Signal 2 — atom inventory: which imidazole N carries H
+    Signal 1 - residue name field in protonated PDB (set by PyPKA's formatter).
+    Signal 2 - atom inventory: which imidazole N carries H
                    HD1 present, HE2 absent  → HSD
                    HE2 present, HD1 absent  → HSE
                    HD1 + HE2 both present   → HSP
                    neither                  → UNKNOWN
-    Signal 3 — CHARMM36 RTF ATOM definitions for each HIS label
+    Signal 3 - CHARMM36 RTF ATOM definitions for each HIS label
                    HSD defines HD1 only; HSE defines HE2 only; HSP defines both.
 
     Decision priority: atoms (2) > name (1) > API-derived label.
@@ -854,13 +854,13 @@ def reconcile_his_from_pdb(mapped: list[MappedResidue], prot_pdb: Path,
     rtf_h   = _his_rtf_h_atoms(rtf)
 
     # One-time RTF sanity: verify each HIS label block matches the required H atoms.
-    # RTF is the AUTHORITY — if this fires, the top_all36_prot.rtf may be non-standard.
+    # RTF is the AUTHORITY - if this fires, the top_all36_prot.rtf may be non-standard.
     for lbl, profile in _RESI_H_PROFILE.items():
         got = rtf_h.get(lbl, frozenset())
         exp = profile["required"]
         if got != exp:
             print(f"  RTF WARNING: {lbl} imidazole H block defines H={set(got)} "
-                  f"(expected required={set(exp)}) — RTF file may be non-standard")
+                  f"(expected required={set(exp)}) - RTF file may be non-standard")
 
     # Lookup table: atom_lbl → which H atoms were seen in the PDB
     _pdb_h: dict[str, frozenset[str]] = {
@@ -879,7 +879,7 @@ def reconcile_his_from_pdb(mapped: list[MappedResidue], prot_pdb: Path,
 
         if info is None:
             print(f"  WARNING: HIS{r.resid} {r.chain}: not found in protonated PDB "
-                  f"— keeping API label {r.charmm_label}")
+                  f"- keeping API label {r.charmm_label}")
             out.append(r); continue
 
         name_lbl, atom_lbl = info
@@ -889,14 +889,14 @@ def reconcile_his_from_pdb(mapped: list[MappedResidue], prot_pdb: Path,
             final = name_lbl if name_lbl in ("HSD","HSE","HSP") else r.charmm_label
             rtf_h_for_final = set(rtf_h.get(final, frozenset()))
             print(f"  WARNING: HIS{r.resid} {r.chain}: no imidazole H in PDB atoms "
-                  f"— using residue name ({final}); "
+                  f"- using residue name ({final}); "
                   f"RTF[{final}] expects H={rtf_h_for_final}")
         elif name_lbl in ("HSD","HSE","HSP") and name_lbl != atom_lbl:
             final = atom_lbl  # atoms win
             print(f"  ERROR: HIS{r.resid} {r.chain}: name={name_lbl} but "
                   f"atoms(HD1/HE2)→{atom_lbl}; RTF[{atom_lbl}] expects "
                   f"H={set(rtf_h.get(atom_lbl, frozenset()))} "
-                  f"— USING ATOM-BASED LABEL (PyPKA naming inconsistency)")
+                  f"- USING ATOM-BASED LABEL (PyPKA naming inconsistency)")
         else:
             final = atom_lbl
 
@@ -923,7 +923,7 @@ def reconcile_his_from_pdb(mapped: list[MappedResidue], prot_pdb: Path,
             if rtf_h_for_final != profile["required"]:
                 print(f"  RTF WARNING: HIS{r.resid} {r.chain}: RTF[{final}] defines "
                       f"H={set(rtf_h_for_final)} but profile expects {set(profile['required'])}"
-                      f" — RTF/PDB topology inconsistency")
+                      f" - RTF/PDB topology inconsistency")
 
         if final != r.charmm_label:
             print(f"  NOTE: HIS{r.resid} {r.chain}: API→{r.charmm_label} PDB→{final}")
@@ -947,7 +947,7 @@ def reconcile_his_from_pdb(mapped: list[MappedResidue], prot_pdb: Path,
 # RTF is the AUTHORITY: these define what atom is added (ADD) or deleted (DELETE)
 # when the patch is applied in CHARMM-GUI relative to the default protonated residue.
 #
-# PyPKA protonated PDB observability — ALL types have PDB atom signals:
+# PyPKA protonated PDB observability - ALL types have PDB atom signals:
 #   HIS  : residue renamed HSD/HSE/HSP + HD1/HE2 presence → 3-signal check ✓
 #   ASP  : HD2 present if ASPP (confirmed: PyPKA writes HD2 via ffconverter/pdbmender) ✓
 #   GLU  : HE2 present if GLUP (confirmed: PyPKA writes HE2 via ffconverter/pdbmender) ✓
@@ -977,7 +977,7 @@ def _validate_patches(rtf: dict) -> None:
     for label, (action, h_atom) in _PATCH_H_INDICATORS.items():
         blk = _rtf_get(label, rtf)
         if blk is None:
-            print(f"  RTF WARNING: PRES {label} not found — cannot verify {action} ATOM {h_atom}")
+            print(f"  RTF WARNING: PRES {label} not found - cannot verify {action} ATOM {h_atom}")
             continue
         verb = blk.verbatim
         if action == "ADD":
@@ -992,7 +992,7 @@ def _validate_patches(rtf: dict) -> None:
             )
         if not found:
             print(f"  RTF WARNING: PRES {label}: expected {action} ATOM {h_atom} "
-                  f"not found — RTF may be non-standard")
+                  f"not found - RTF may be non-standard")
 
 
 def _lys_tyr_cys_pdb_signals(prot_pdb: Path) -> dict[tuple[str, str, int], str]:
@@ -1126,7 +1126,7 @@ def reconcile_non_his_from_pdb(mapped: list[MappedResidue], prot_pdb: Path,
 
         if pdb_lbl == "THR_nohg1":
             print(f"  WARNING: THR{r.resid} {r.chain}: HG1 absent in PDB "
-                  f"(deprotonated THR pKa~14) — PRES THRD not in CHARMM36 RTF, "
+                  f"(deprotonated THR pKa~14) - PRES THRD not in CHARMM36 RTF, "
                   f"manual handling required")
             result.append(r)
             continue
@@ -1173,7 +1173,7 @@ def _validate_label_chain(mapped: list[MappedResidue], rtf: dict) -> None:
     reconcile_non_his_from_pdb() already ran and may have corrected the label to match the
     PDB (which is authoritative). Checking mpt vs corrected-label would fire false alarms.
 
-    HIS is excluded — it is handled by reconcile_his_from_pdb() (3-signal).
+    HIS is excluded - it is handled by reconcile_his_from_pdb() (3-signal).
     Prints nothing when everything is consistent (normal case).
 
     :param mapped: Fully reconciled residues (post HIS and non-HIS reconciliation).
@@ -1195,7 +1195,7 @@ def _validate_label_chain(mapped: list[MappedResidue], rtf: dict) -> None:
             blk = _rtf_get(r.charmm_label, rtf)
             if blk is None:
                 print(f"  RTF MISSING: {rn}{r.resid} {r.chain}: label={r.charmm_label!r} "
-                      f"has no RESI/PRES in CHARMM36 RTF — CHARMM-GUI cannot apply this")
+                      f"has no RESI/PRES in CHARMM36 RTF - CHARMM-GUI cannot apply this")
             continue  # nothing more to check without RTF entry
 
         # ── Signal 2: _PATCH_H_INDICATORS coherence ────────────────────────────
@@ -1216,15 +1216,15 @@ def _validate_label_chain(mapped: list[MappedResidue], rtf: dict) -> None:
         # ── Signal 3: pct_protonated/pct_deprotonated ↔ label direction ─────────
         # ADD patch (e.g. ASPP, GLUP) = protonated state → pct_protonated must be ≥ 50%
         # DELETE patch (e.g. CYSD, SERD, LSN) = deprotonated state → pct_deprotonated ≥ 50%
-        # Skip TIE cases (both ~50%) — the label is ambiguous by design.
+        # Skip TIE cases (both ~50%) - the label is ambiguous by design.
         if not r.is_tie and lbl in _PATCH_H_INDICATORS:
             patch_action, _ = _PATCH_H_INDICATORS[lbl]
             if patch_action == "ADD" and r.pct_protonated < 50.0:
                 print(f"  PCT MISMATCH: {rn}{r.resid} {r.chain}: label={lbl!r} (protonated) "
-                      f"but pct_protonated={r.pct_protonated:.1f}% < 50% — check mpt/titration curve")
+                      f"but pct_protonated={r.pct_protonated:.1f}% < 50% - check mpt/titration curve")
             elif patch_action == "DELETE" and r.pct_deprotonated < 50.0:
                 print(f"  PCT MISMATCH: {rn}{r.resid} {r.chain}: label={lbl!r} (deprotonated) "
-                      f"but pct_deprotonated={r.pct_deprotonated:.1f}% < 50% — check mpt/titration curve")
+                      f"but pct_deprotonated={r.pct_deprotonated:.1f}% < 50% - check mpt/titration curve")
 
 
 # ── Cross-validation (pKAI+) ─────────────────────────────────────────────────
@@ -1592,7 +1592,7 @@ def _post(mapped_raw: list[SiteResult], prot_pdb: Path, pdb_path: Path,
     if not pdb_path.exists():
         raise FileNotFoundError(
             f"PDB not found for pKAI+ cross-validation: {pdb_path}\n"
-            "pKAI+ is mandatory — provide --pdb or ensure the PDB is in the outdir."
+            "pKAI+ is mandatory - provide --pdb or ensure the PDB is in the outdir."
         )
     print("\n[+] Cross-validation (PyPKA vs pKAI+)...")
     pkai_recs = run_pkai(pdb_path)   # hard failure if pKAI not installed or PDB missing

@@ -20,8 +20,8 @@ sys.path.insert(0, str(ROOT))
 import pypkatool.core as ap
 
 T = Path(__file__).parent            # tests/
-DATA = T / "data"                    # tests/data/  — benchmark input PDBs
-FIXTURES = T / "fixtures"            # tests/fixtures/ — frozen reference outputs
+DATA = T / "data"                    # tests/data/  - benchmark input PDBs
+FIXTURES = T / "fixtures"            # tests/fixtures/ - frozen reference outputs
 VERBOSE = "-v" in sys.argv
 
 def _rdir(stem: str, ph: float) -> Path:
@@ -91,19 +91,19 @@ def cv_agreement(d: Path) -> float | None:
             except Exception: pass
     return None
 
-# ─── 1. Unit tests — pure functions ──────────────────────────────────────────
+# ─── 1. Unit tests - pure functions ──────────────────────────────────────────
 
-section("Prerequisite — pKAI+ mandatory availability")
+section("Prerequisite - pKAI+ mandatory availability")
 
 import importlib.util as _ilu
-check("pKAI installed (pip install pKAI — mandatory requirement)",
+check("pKAI installed (pip install pKAI - mandatory requirement)",
       _ilu.find_spec("pkai") is not None,
       "FATAL: pKAI not installed. Run: pip install pKAI")
 check("_require_pkai() does not raise when pKAI installed",
       True if _ilu.find_spec("pkai") is not None else False,
-      "pKAI missing — all downstream tests may fail")
+      "pKAI missing - all downstream tests may fail")
 
-section("Unit — _label() mapping")
+section("Unit - _label() mapping")
 
 HIS_CASES = [(1,"HSD"),(2,"HSE"),(3,"HSP")]
 for mpt, exp in HIS_CASES:
@@ -129,7 +129,7 @@ CTR_CASES = [(1,"CNEU"),(5,"CTER")]
 for mpt, exp in CTR_CASES:
     check(f"CTR mpt={mpt} → {exp}", ap._label("CTR", mpt, 4, "a") == exp)
 
-section("Unit — _pka_from_curve()")
+section("Unit - _pka_from_curve()")
 
 # Normal crossing near pH 5
 curve = [(4.0,0.9),(4.5,0.7),(5.0,0.5),(5.5,0.3),(6.0,0.1)]
@@ -150,7 +150,7 @@ low = [(0.0,0.6),(0.5,0.55),(1.0,0.45)]
 pka2, s2 = ap._pka_from_curve(low)
 check("crossing near 0 → pKa formatted", pka2 is not None or s2 in ("<0.0","N/A"))
 
-section("Unit — _charge_split()")
+section("Unit - _charge_split()")
 
 probs_c = [0.1, 0.1, 0.8]   # cationic: last=prot
 pp, pd = ap._charge_split("c", probs_c)
@@ -164,7 +164,7 @@ check("anionic: last prob = deprotonated", abs(pd-60.0)<0.1 and abs(pp-40.0)<0.1
 
 check("empty probs → 50/50", ap._charge_split("c", []) == (50.0, 50.0))
 
-section("Unit — RTF lookup")
+section("Unit - RTF lookup")
 
 rtf = ap._load_rtf()
 for lbl, expected in [("HSD",True),("HSE",True),("HSP",True),
@@ -173,13 +173,13 @@ for lbl, expected in [("HSD",True),("HSE",True),("HSP",True),
                        ("ARGN",False),("NONEXISTENT",False)]:
     check(f"RTF has '{lbl}' = {expected}", ap._rtf_has(lbl, rtf) == expected)
 
-section("Unit — SKIP_TABLE excludes NTR/CTR from dat")
+section("Unit - SKIP_TABLE excludes NTR/CTR from dat")
 
 mr = ap.MappedResidue("NTR",1,"A","7.5",80,20,"NNEU",True,False,"-",True)
 check("NTR in SKIP_TABLE", "NTR" in ap.SKIP_TABLE)
 check("CTR in SKIP_TABLE", "CTR" in ap.SKIP_TABLE)
 
-section("Unit — TIE detection")
+section("Unit - TIE detection")
 
 rtf = ap._load_rtf()
 # Build a site result with prot~50% to trigger tie
@@ -190,7 +190,7 @@ check("TIE when |prot-deprot| <= 2%", abs(mr_tie.pct_protonated - mr_tie.pct_dep
 mr_no_tie = ap.MappedResidue("ASP",10,"A","3.0",5.0,95.0,"ASP",True,False,"-",False)
 check("no TIE when clearly deprotonated", abs(mr_no_tie.pct_protonated - mr_no_tie.pct_deprotonated) > ap.TIE_MARGIN)
 
-section("Unit — error handling")
+section("Unit - error handling")
 
 try:
     ap._load_rtf(Path("/nonexistent/path/to.rtf"))
@@ -241,9 +241,9 @@ except SystemExit as e:
 finally:
     _pdb_c9.unlink()
 
-# ─── 2. Output validation — format ────────────────────────────────────────────
+# ─── 2. Output validation - format ────────────────────────────────────────────
 
-section("Output format — dat table")
+section("Output format - dat table")
 
 for name, d in RESULTS.items():
     if not d.exists(): continue
@@ -256,7 +256,7 @@ for name, d in RESULTS.items():
     check(f"{name}: all action residues RTF=YES", len(no_rtf)==0,
           f"{len(no_rtf)} rows without YES")
 
-section("Output format — detail.json RTF as plain text")
+section("Output format - detail.json RTF as plain text")
 
 for name, d in RESULTS.items():
     if not d.exists(): continue
@@ -265,7 +265,7 @@ for name, d in RESULTS.items():
            if not isinstance(v, str)}
     check(f"{name}: RTF blocks are strings", len(bad)==0, f"non-string: {bad}")
 
-section("Output format — JSON completeness")
+section("Output format - JSON completeness")
 
 REQUIRED_FIELDS = {"protein","target_ph","total_titratable","needs_action_count","summary"}
 for name, d in RESULTS.items():
@@ -279,9 +279,9 @@ for name, d in RESULTS.items():
         req = {"resname","resid","chain","pka","pct_protonated","final_label","needs_action"}
         check(f"{name}: summary entries complete", req <= entry_keys, f"missing: {req-entry_keys}")
 
-# ─── 3. Physics/chemistry — known labels ──────────────────────────────────────
+# ─── 3. Physics/chemistry - known labels ──────────────────────────────────────
 
-section("Physics — known protonation states (literature)")
+section("Physics - known protonation states (literature)")
 
 KNOWN = {
     # (protein_key, resname, resid, chain): expected_label
@@ -293,7 +293,7 @@ KNOWN = {
     ("thiorx",   "HIS",  6, "A"): "HSE",    # pKa~6.2
     # denv3 chain A HIS144 + HIS315: pKa~4.8 (borderline), PyPKA PB gives HSE in dimer
     # (virion/cryo-EM shifts pKa up; documented PB limitation for buried residues)
-    ("denv3",    "HIS",144, "A"): "HSE",    # buried, pKa<5 in dimer PB — expected limitation
+    ("denv3",    "HIS",144, "A"): "HSE",    # buried, pKa<5 in dimer PB - expected limitation
     ("denv3",    "HIS",315, "A"): "HSE",    # pKa~4.8 borderline → HSE in dimer; HSP in virion
 }
 
@@ -308,7 +308,7 @@ for (prot, resname, resid, chain), exp_lbl in KNOWN.items():
     check(f"{prot}: {resname}{resid}{chain} → {exp_lbl}", got == exp_lbl,
           f"got {got!r}")
 
-section("Physics — alpha-pocket HIS protonated at pH 5 (DENV)")
+section("Physics - alpha-pocket HIS protonated at pH 5 (DENV)")
 
 for prot in ("denv2","denv3"):
     d = RESULTS.get(prot)
@@ -320,7 +320,7 @@ for prot in ("denv2","denv3"):
     check(f"{prot}: ≥4 alpha-pocket HIS protonated (>60%) at pH 5", len(alpha_his)>=4,
           f"found {len(alpha_his)}")
 
-section("Physics — pKa values in chemically reasonable range")
+section("Physics - pKa values in chemically reasonable range")
 
 for name, d in RESULTS.items():
     if not d.exists(): continue
@@ -331,7 +331,7 @@ for name, d in RESULTS.items():
     check(f"{name}: all pKa in (0,14) or flagged correctly", len(outliers)==0,
           f"{len(outliers)} outliers")
 
-section("Physics — LYS/ARG predominantly protonated at pH 7")
+section("Physics - LYS/ARG predominantly protonated at pH 7")
 
 for name in ("lysozyme","barnase","snase","rnasea"):
     d = RESULTS.get(name)
@@ -343,7 +343,7 @@ for name in ("lysozyme","barnase","snase","rnasea"):
         check(f"{name}: LYS avg %prot at pH7 > 95%", prot_frac>95.0,
               f"avg={prot_frac:.1f}%")
 
-section("Physics — ASP/GLU predominantly deprotonated at pH 7")
+section("Physics - ASP/GLU predominantly deprotonated at pH 7")
 
 for name in ("lysozyme","barnase","rnasea"):
     d = RESULTS.get(name)
@@ -357,7 +357,7 @@ for name in ("lysozyme","barnase","rnasea"):
 
 # ─── 4. Cross-validation agreement ───────────────────────────────────────────
 
-section("Cross-validation — PyPKA vs pKAI+ sign agreement")
+section("Cross-validation - PyPKA vs pKAI+ sign agreement")
 
 THRESHOLDS = {
     "lysozyme": 95.0, "barnase": 95.0, "rnasea": 95.0,
@@ -377,7 +377,7 @@ for name, threshold in THRESHOLDS.items():
 
 # ─── 5. output_pypka/ integrity ──────────────────────────────────────────────────
 
-section("Output structure — output_pypka/pka.out")
+section("Output structure - output_pypka/pka.out")
 
 for name, d in RESULTS.items():
     if not d.exists(): continue
@@ -390,7 +390,7 @@ for name, d in RESULTS.items():
 
 # ─── 6. Edge cases ────────────────────────────────────────────────────────────
 
-section("HIS tautomer — atom-based cross-check (_his_pdb_signals)")
+section("HIS tautomer - atom-based cross-check (_his_pdb_signals)")
 
 import tempfile, textwrap
 
@@ -449,7 +449,7 @@ lbl_name, lbl_atoms = sig.get(("A",1),("?","?"))
 check("no imidazole H → atom_lbl=UNKNOWN (graceful fallback)",
       lbl_atoms=="UNKNOWN", f"atoms={lbl_atoms}")
 
-section("HIS tautomer — RTF cross-check (_his_rtf_h_atoms)")
+section("HIS tautomer - RTF cross-check (_his_rtf_h_atoms)")
 
 rtf_chk = ap._load_rtf()
 rtf_h_chk = ap._his_rtf_h_atoms(rtf_chk)
@@ -479,7 +479,7 @@ check("_RESI_H_PROFILE HSP forbidden=empty",
 check("_PATCH_H_INDICATORS includes SERD (Ser deprotonation)",
       "SERD" in ap._PATCH_H_INDICATORS, "SERD missing from _PATCH_H_INDICATORS")
 
-section("HIS tautomer — reconcile_his_from_pdb() integration")
+section("HIS tautomer - reconcile_his_from_pdb() integration")
 
 # Real lysozyme: run reconciliation and verify HIS15 → HSE, no discrepancies
 import io, sys as _sys
@@ -547,7 +547,7 @@ check("_validate_patches() silent on standard CHARMM36 RTF (no warnings)",
 
 section("LYS / TYR / CYS / SER / THR / CYX / CYM protonation from PDB atom inventory")
 
-# NOTE: ASP/GLU are NOT included here — PyPKA does not add HD2/HE2 to the
+# NOTE: ASP/GLU are NOT included here - PyPKA does not add HD2/HE2 to the
 # protonated PDB for these types (they remain as standard GROMOS H atoms).
 # ARG: NOT TITRATABLE in PyPKA (TITRABLETAUTOMERS has no ARG entry; pKa~12.5 always protonated).
 # THR: titratable (n_reg=3) but no PRES THRD in CHARMM36 RTF; deprotonation extremely rare.
@@ -697,7 +697,7 @@ with _tf2.TemporaryDirectory() as _tmp_pka:
         resname="HIS", resid=15, chain="A", pka=5.7, pka_str="5.70",
         site_type="c", most_prob_taut=2, n_regular_tautomers=2,
         populations={}, pct_protonated=35.0, pct_deprotonated=65.0)
-    # pKAI+ is MANDATORY — always two columns
+    # pKAI+ is MANDATORY - always two columns
     _pkai_map = {("A", 15, "HIS"): 5.82}
     ap._save_pypka_out([_sr], _pka_dir, 7.0, pkai_map=_pkai_map)
     _pka_content = (_pka_dir / "output_pypka" / "pka.out").read_text()
@@ -714,7 +714,7 @@ with _tf2.TemporaryDirectory() as _tmp_pka:
         populations={}, pct_protonated=0.1, pct_deprotonated=99.9)
     ap._save_pypka_out([_sr, _sr2], _pka_dir, 7.0, pkai_map=_pkai_map)
     _pka_np = (_pka_dir / "output_pypka" / "pka.out").read_text()
-    check("pka.out → unpaired residue shows N/P (not N/A — pKAI+ always ran)",
+    check("pka.out → unpaired residue shows N/P (not N/A - pKAI+ always ran)",
           "N/P" in _pka_np and "N/A" not in _pka_np,
           f"got:\n{_pka_np}")
 
@@ -726,7 +726,7 @@ check("_label SER protonated (mpt==1) → SER",
 check("_label THR deprotonated (mpt==4) → THR (no PRES THRD in CHARMM36 RTF)",
       ap._label("THR", 4, 3, "a") == "THR", f"got {ap._label('THR', 4, 3, 'a')}")
 
-section("Synthetic error injection — RTF-primary validation catches errors")
+section("Synthetic error injection - RTF-primary validation catches errors")
 
 # These tests deliberately inject errors into PDB content or labels to verify
 # that the validation functions correctly detect and report inconsistencies.
@@ -889,7 +889,7 @@ check("correct HSD → label unchanged (still HSD)",
       result_inj6[0].charmm_label == "HSD",
       f"got {result_inj6[0].charmm_label}")
 
-section("_validate_label_chain — PyPKA source → _label() → RTF for all types")
+section("_validate_label_chain - PyPKA source → _label() → RTF for all types")
 
 # For each titratable type that can appear in the table, verify the full chain:
 # 1. _label(resname, mpt, n_reg, site_type) → expected CHARMM label
@@ -1036,7 +1036,7 @@ for resname in ("HIS","ASP","GLU","LYS","NTR","CTR"):
     pops = ap._build_pops(resname, ap._STYPE[resname], probs)
     check(f"_build_pops({resname}): {n} states", len(pops)==n)
 
-# ─── Adversarial injection — inputs deliberately wrong, pipeline must block ───
+# ─── Adversarial injection - inputs deliberately wrong, pipeline must block ───
 #
 # These tests inject the OPPOSITE-OF-CORRECT state and verify that the pipeline
 # detects and fixes each one. Each test encodes a real bug that would reach the
@@ -1175,7 +1175,7 @@ check("A9: SER label + no HG1 in PDB → corrected to SERD",
 check("A9: corrected to SERD → needs_action=True",
       _res_a9[0].needs_action, f"needs_action={_res_a9[0].needs_action}")
 
-# ── A10: HIS — HSP but PDB has only HD1 (no HE2) → must correct to HSD ──────
+# ── A10: HIS - HSP but PDB has only HD1 (no HE2) → must correct to HSD ──────
 # make_his_pdb uses resid=1, chain="A"; MappedResidue must match
 _pdb_a10 = make_his_pdb("HSP", ["N","CA","CB","CG","ND1","HD1","CE1","NE2","CD2"])
 _mr_a10 = [_make_mapped_his(1, "A", "HSP")]
@@ -1187,7 +1187,7 @@ check("A10: HSP label + HD1 only (no HE2) in PDB → corrected to HSD",
 check("A10: HSP→HSD correction → ERROR message emitted",
       "ERROR" in _log_a10, f"got:\n{_log_a10}")
 
-# ── A11: Multiple wrong labels in one call — all corrected independently ───────
+# ── A11: Multiple wrong labels in one call - all corrected independently ───────
 # PDB has: ASP(30) with HD2; LYS(5) with 3 HZ; GLU(40) without HE2
 # Labels:  ASP→"ASP" (wrong, should ASPP); LYS→"LSN" (wrong, should LYS); GLU→"GLUP" (wrong, should GLU)
 _pdb_a11_lines = []
@@ -1210,11 +1210,11 @@ _mr_a11 = [
 _res_a11, _log_a11 = _reconcile(_mr_a11, _pdb_a11)
 _pdb_a11.unlink()
 _by_rn_a11 = {r.resname: r for r in _res_a11}
-check("A11: multi-wrong — ASP+HD2 with label ASP → ASPP",
+check("A11: multi-wrong - ASP+HD2 with label ASP → ASPP",
       _by_rn_a11["ASP"].charmm_label == "ASPP", f"got {_by_rn_a11['ASP'].charmm_label}")
-check("A11: multi-wrong — LYS+3HZ with label LSN → LYS",
+check("A11: multi-wrong - LYS+3HZ with label LSN → LYS",
       _by_rn_a11["LYS"].charmm_label == "LYS", f"got {_by_rn_a11['LYS'].charmm_label}")
-check("A11: multi-wrong — GLUP+noHE2 with label GLUP → GLU",
+check("A11: multi-wrong - GLUP+noHE2 with label GLUP → GLU",
       _by_rn_a11["GLU"].charmm_label == "GLU", f"got {_by_rn_a11['GLU'].charmm_label}")
 
 section("Adversarial: pct direction contradicts label (_validate_label_chain)")
@@ -1317,9 +1317,9 @@ check("C5: LSN label with blank chain ID in PDB → mapped to 'A' and reconciled
       _res_c5[0].charmm_label == "LSN" and _res_c5[0].chain == "A",
       f"got label={_res_c5[0].charmm_label}, chain={_res_c5[0].chain}")
 
-# ─── THR — label, PDB signal, reconcile behavior ─────────────────────────────
+# ─── THR - label, PDB signal, reconcile behavior ─────────────────────────────
 
-section("THR — label mapping and reconcile behavior")
+section("THR - label mapping and reconcile behavior")
 
 def _make_thr_pdb(has_hg1: bool) -> Path:
     """THR with or without hydroxyl proton HG1 on OG1."""
@@ -1395,9 +1395,9 @@ if _lys_dir.exists():
     check("lysozyme: THR absent from protonation_inputs.dat (no CHARMM action needed)",
           len(_dat_thr) == 0, f"found unexpected THR rows: {_dat_thr}")
 
-# ─── HIS — PDB atom inventory cross-check ────────────────────────────────────
+# ─── HIS - PDB atom inventory cross-check ────────────────────────────────────
 
-section("HIS — PDB atom inventory must match CHARMM label in JSON output")
+section("HIS - PDB atom inventory must match CHARMM label in JSON output")
 
 _LABEL_TO_ATOMS = {
     "HSD": {"required": {"HD1"}, "forbidden": {"HE2"}},
@@ -1471,9 +1471,9 @@ if RESULTS["barnase"].exists():
           len(_bad_his) == 0,
           str([(r["resid"],r["final_label"]) for r in _bad_his]))
 
-# ─── All outputs — structural invariants ─────────────────────────────────────
+# ─── All outputs - structural invariants ─────────────────────────────────────
 
-section("Output files — structural invariants for all test cases")
+section("Output files - structural invariants for all test cases")
 
 _VALID_LABELS = frozenset({"HSD","HSE","HSP","ASPP","GLUP","LSN","CYSD","SERD",
                             "TYRD","NNEU","CNEU","NTER","CTER",

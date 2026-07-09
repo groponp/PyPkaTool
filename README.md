@@ -23,18 +23,18 @@ Output per run:
 
 Requires [conda](https://docs.conda.io/) (miniconda or anaconda) on `PATH`.
 
-This project uses **two separate, independent conda environments** — one is
+This project uses **two separate, independent conda environments** - one is
 not created "inside" the other, and they serve different purposes:
 
 | Environment | Created from | Do you activate it? |
 |---|---|---|
-| `pypkatool` | `environment.yml` | **Yes — every time** you run the tool: `conda activate pypkatool` |
+| `pypkatool` | `environment.yml` | **Yes - every time** you run the tool: `conda activate pypkatool` |
 | `py27` | `environment-py27.yml` | **No, never.** `pypkatool` finds it on disk automatically at runtime. |
 
 Why `py27` exists at all: PyPKA's compiled Poisson-Boltzmann backend
 (DelPhi4py) needs `numpy<2` and `libgfortran4=7.5.0` in the main environment
 (the compiled binary was built against NumPy's 1.x C API and links
-`GFORTRAN_7`, which `libgfortran.so.5` / GFortran 10+ doesn't export) — that
+`GFORTRAN_7`, which `libgfortran.so.5` / GFortran 10+ doesn't export) - that
 part lives in `pypkatool`. Separately, PyPKA also shells out to a bare
 `python2.7` interpreter internally (via `pdbmender`'s vendored `pdb2pqr.py`),
 which cannot coexist with Python 3 in the same environment, hence the second,
@@ -50,7 +50,7 @@ conda env create -f environment.yml
 conda env create -f environment-py27.yml
 
 # 2. Activate the MAIN environment (py27 is never activated) and install
-#    pypkatool into it — pick ONE of the two:
+#    pypkatool into it - pick ONE of the two:
 conda activate pypkatool
 
 # 2a. Editable install (recommended if you cloned this repo to modify or
@@ -75,7 +75,7 @@ If you named it something else, either rename it to `py27` or prepend its
 
 ### Every time you want to use it
 
-Only `pypkatool` needs activating — `py27` is "install once and forget":
+Only `pypkatool` needs activating - `py27` is "install once and forget":
 
 ```bash
 conda activate pypkatool
@@ -115,19 +115,19 @@ pypkatool run examples/denv2.pdb --ph 5.0
 
 PyPKA reports, per titratable site, the most probable *tautomer* out of `N`
 regular tautomers plus one *reference* tautomer (index `N+1`). Which physical
-state that reference tautomer represents depends on site polarity — this is
+state that reference tautomer represents depends on site polarity - this is
 easy to get backwards, so it's worth stating precisely (verified against the
 installed PyPKA source, `titsite.py::Titsite.getRefProtState()`, and against
 the signed atomic partial charges in the CHARMM36 `.st` tautomer files):
 
 * **Cationic sites** (`HIS`, `LYS`, `NTR`): the reference tautomer is the
   **protonated**, positively charged state. It is also the CHARMM *default*
-  RESI (`LYS`, `NTER`) — no patch needed. The regular tautomers are the
+  RESI (`LYS`, `NTER`) - no patch needed. The regular tautomers are the
   neutral forms and need a patch (`LSN`, `NNEU`).
 * **Anionic sites** (`ASP`, `GLU`, `CTR`, `CYS`, `TYR`, `SER`): the reference
   tautomer is the **deprotonated**, negatively charged state.
   * For `ASP`/`GLU`/`CTR`, that deprotonated/charged form *is* the CHARMM
-    default RESI (`ASP`, `GLU`, `CTER`) — no patch needed; the protonated
+    default RESI (`ASP`, `GLU`, `CTER`) - no patch needed; the protonated
     form needs a patch (`ASPP`, `GLUP`, `CNEU`).
   * For `CYS`/`TYR`/`SER` it's the opposite: the CHARMM default RESI is the
     *protonated*, neutral form (`CYS`, `TYR`, `SER`), so the deprotonated
@@ -144,7 +144,7 @@ truth) and against the bundled CHARMM36 RTF (`pypkatool/data/top_all36_prot.rtf`
 which is the authority for which labels exist and what atoms each implies. A
 handful of deprotonated states have no patch in standard CHARMM36
 (`THR` deprotonated has no `PRES THRD`; `TYR` deprotonated has no `PRES
-TYRD`) — these are reported with a warning rather than silently mismapped.
+TYRD`) - these are reported with a warning rather than silently mismapped.
 
 ## Validation
 
@@ -189,7 +189,7 @@ No PyPKA rerun is needed to run this suite.
 │   │                          mapping, PDB/RTF cross-validation, pKAI+
 │   │                          cross-validation, report writers (see docstrings
 │   │                          for full API detail)
-│   └── data/                  Package data — bundled CHARMM36 protein topology
+│   └── data/                  Package data - bundled CHARMM36 protein topology
 │       └── top_all36_prot.rtf
 ├── tests/
 │   ├── test_pypkatool.py      Unit + regression + adversarial test suite
@@ -214,7 +214,7 @@ and is never imported by `pypkatool` itself.
   [DOI: 10.1021/acs.jcim.0c00718](https://doi.org/10.1021/acs.jcim.0c00718)
 - pKAI / pKAI+: Pires, D. E. V. et al. *J. Chem. Inf. Model.* 2021.
   [DOI: 10.1021/acs.jcim.1c00840](https://doi.org/10.1021/acs.jcim.1c00840)
-- CHARMM36: MacKerell, A. D. et al. — `top_all36_prot.rtf` RESI/PRES blocks
+- CHARMM36: MacKerell, A. D. et al. - `top_all36_prot.rtf` RESI/PRES blocks
   for all protonation states used here.
 
 ## Author
@@ -227,7 +227,7 @@ Department of Physics, UNESP.
 
 This software is provided "as is", without warranty of any kind, express or
 implied, including but not limited to the warranties of merchantability,
-fitness for a particular purpose, and noninfringement — see the full text in
+fitness for a particular purpose, and noninfringement - see the full text in
 [LICENSE](LICENSE). pKa predictions and CHARMM protonation-state assignments
 produced by this pipeline are computational estimates and must be checked
 against experimental data and domain expertise before use in downstream
@@ -235,4 +235,4 @@ modeling; the authors assume no liability for outcomes derived from its use.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
