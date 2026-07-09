@@ -35,8 +35,17 @@ bare `python2.7` interpreter internally (via `pdbmender`'s vendored
 conda env create -f environment.yml
 conda activate pypkatool
 
-# 2. Install pypkatool itself (editable install; gives you the `pypkatool` command)
+# 2. Install pypkatool itself — pick ONE of the two:
+
+# 2a. Editable install (recommended if you cloned this repo to modify or
+#     update it): the command reads pypkatool/ from this checkout directly,
+#     so `git pull` and local edits take effect immediately, no reinstall.
 pip install -e .
+
+# 2b. Regular install (recommended if you just want to use the CLI and
+#     don't plan to touch the source): copies the package into the
+#     environment's site-packages, same as any other pip package.
+pip install .
 
 # 3. Python 2.7 helper environment (PyPKA calls this internally; you never activate it)
 conda env create -f environment-py27.yml
@@ -172,6 +181,22 @@ pyproject.toml             Package metadata + `pypkatool` console script
   [DOI: 10.1021/acs.jcim.1c00840](https://doi.org/10.1021/acs.jcim.1c00840)
 - CHARMM36: MacKerell, A. D. et al. — `top_all36_prot.rtf` RESI/PRES blocks
   for all protonation states used here.
+
+## Author
+
+**Ropón-Palacios G.**
+Department of Physics, UNESP.
+[georcki.ropon@unesp.br](mailto:georcki.ropon@unesp.br)
+
+## Disclaimer
+
+This software is provided "as is", without warranty of any kind, express or
+implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose, and noninfringement — see the full text in
+[LICENSE](LICENSE). pKa predictions and CHARMM protonation-state assignments
+produced by this pipeline are computational estimates and must be checked
+against experimental data and domain expertise before use in downstream
+modeling; the authors assume no liability for outcomes derived from its use.
 
 ## License
 
