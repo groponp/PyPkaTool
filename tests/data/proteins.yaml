@@ -1,0 +1,81 @@
+# AutoPypKa test suite — 12 proteins from MCCE4 benchmark
+# Run: conda activate autopypka && bash tests/run_tests.sh
+# All runs sequential, ncpus = all available (nproc)
+
+proteins:
+
+  # --- Small proteins / pKa benchmarks (pH 7.0) ---
+
+  - name: lysozyme
+    pdb: tests/lysozyme.pdb
+    ph: 7.0
+    epsin: 15
+    note: "Hen egg-white lysozyme 4LZT. Ref: Tanford 1972 — GLU35~6.3, ASP52~1.2, HIS15~5.7"
+
+  - name: 1bpi_bpti
+    pdb: tests/1bpi.pdb
+    ph: 7.0
+    epsin: 15
+    note: "BPTI (bovine pancreatic trypsin inhibitor). Lys15/26/41/46~10.6-10.8; Glu7/Glu49~3.7-3.8"
+
+  - name: 7rsa_rnasea
+    pdb: tests/7rsa.pdb
+    ph: 7.0
+    epsin: 15
+    note: "RNase A. Catalytic pair His12=6.0, His119=6.5"
+
+  - name: 1a2p_barnase
+    pdb: tests/1a2p.pdb
+    ph: 7.0
+    epsin: 15
+    note: "Barnase chain C. Asp93 pKa<2.0 (anomalous), His102 pKa=6.3 (catalytic)"
+
+  - name: 1stn_snase
+    pdb: tests/1stn.pdb
+    ph: 7.0
+    epsin: 15
+    note: "Staphylococcal Nuclease. His8=6.52, Asp77/Asp83<2.2 (buried)"
+
+  - name: 1pgb_proteing
+    pdb: tests/1pgb.pdb
+    ph: 7.0
+    epsin: 15
+    note: "Protein G domain B1 (56 aa). Lys13>11, Tyr45>12"
+
+  - name: 2trx_thioredoxin
+    pdb: tests/2trx.pdb
+    ph: 7.0
+    epsin: 15
+    note: "Thioredoxin. Asp26 pKa=7.5 (anomalous, redox-active site); His6=6.2"
+
+  # --- Flavivirus envelope proteins (pH 5.0) ---
+
+  - name: denv2
+    pdb: tests/denv2.pdb
+    ph: 5.0
+    epsin: 15
+    note: "DENV2 E protein (DENV2_clean.pdb). Alpha-pocket: His144/317/244/282→HSP, Glu368→GLUP, Asp42→ASP"
+
+  - name: denv3
+    pdb: tests/denv3.pdb
+    ph: 5.0
+    epsin: 15
+    note: "DENV3 E protein (DENV3_clean.pdb). Alpha-pocket validation at pH 5.0"
+
+  - name: 3j27_dengue
+    pdb: tests/3j27.pdb
+    ph: 5.0
+    epsin: 15
+    note: "Dengue virion E-M heterodimer (3J27, Zhang 2012). 1 copy of 60 in icosahedral assembly"
+
+  - name: 2hg0_westnile
+    pdb: tests/2hg0.pdb
+    ph: 5.0
+    epsin: 15
+    note: "West Nile virus E protein monomer. Alpha-pocket comparison with dengue"
+
+  - name: rocv_em
+    pdb: tests/rocv_em.pdb
+    ph: 5.0
+    epsin: 15
+    note: "Rocio virus E protein. Flavivirus alpha-pocket at endosomal pH"

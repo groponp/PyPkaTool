@@ -1,0 +1,19 @@
+# PypKaTools v1.0.0 | engine=PyPKA | epsin=15 | ionicstr=0.1 | pH=7.0
+# protein=7rsa_rnasea | date=2026-06-26 | input=7rsa.pdb
+# Reference: PyPKA DOI 10.1021/acs.jcim.0c00718 | Cross-validation: pKAI+ (ML)
+#
+# Only residues requiring CHARMM-GUI action are listed.
+# Terminal groups (NTR/CTR) and default-state residues are omitted.
+# Full tautomer detail and RTF blocks are in detail.json.
+#
+# PKA_PKAI+: N/P = residue not paired with pKAI+ output
+# ACTION   : RESI = set in PDB Reader | PATCH = Patches panel | TIE = ambiguous
+
+----------------------------------------------------------------------------------------------------
+RESNAME   RESID  CHAIN   PKA_PYPKA    %PROT  %DEPROT   PKA_PKAI+  CHARMM_LABEL    RTF  ACTION
+----------------------------------------------------------------------------------------------------
+HIS          12      A        5.84     10.6     89.4        6.09  HSD             YES  RESI
+HIS          48      A        6.67     32.3     67.7        6.69  HSD             YES  RESI
+HIS         105      A        6.39     19.6     80.4        6.68  HSE             YES  RESI
+HIS         119      A        6.42     23.0     77.0        6.53  HSE             YES  RESI
+----------------------------------------------------------------------------------------------------

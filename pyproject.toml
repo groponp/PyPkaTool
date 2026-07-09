@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pypkatool"
+version = "1.0.0"
+description = "PyPKA pKa results to CHARMM-GUI protonation states, cross-validated against pKAI+"
+readme = "README.md"
+requires-python = ">=3.10,<3.11"
+license = { text = "MIT" }
+authors = [{ name = "PypKaTools contributors" }]
+keywords = ["pKa", "protonation", "CHARMM", "CHARMM-GUI", "PyPKA", "pKAI", "molecular dynamics", "Poisson-Boltzmann"]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+]
+
+# pypka and pKAI are only installable/importable inside the conda environment
+# built from environment.yml (they need numpy<2 and libgfortran4=7.5.0 for the
+# compiled DelPhi backend, and pKAI pulls in torch). This project intentionally
+# does not pin them here; see README.md "Installation" for the conda-based setup.
+dependencies = []
+
+[project.scripts]
+pypkatool = "pypkatool.core:main"
+
+[tool.setuptools]
+packages = ["pypkatool"]
+
+[tool.setuptools.package-data]
+pypkatool = ["data/top_all36_prot.rtf"]

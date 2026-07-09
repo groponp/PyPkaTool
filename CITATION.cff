@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: >-
+  If you use PypKaTools, please cite this software and, since it is a thin
+  pipeline layer, also cite the two methods it wraps: PyPKA and pKAI/pKAI+.
+title: PypKaTools
+version: 1.0.0
+date-released: 2026-07-08
+type: software
+license: MIT
+references:
+  - type: article
+    title: >-
+      PypKa: A Flexible Python Module for Poisson-Boltzmann-Based pKa
+      Calculations
+    authors:
+      - family-names: Reis
+        given-names: P. B. P. S.
+    journal: Journal of Chemical Information and Modeling
+    volume: 60
+    start: 4442
+    end: 4448
+    year: 2020
+    doi: 10.1021/acs.jcim.0c00718
+  - type: article
+    title: >-
+      pKAI: Machine Learning-Based Prediction of pKa Values
+    authors:
+      - family-names: Pires
+        given-names: D. E. V.
+    journal: Journal of Chemical Information and Modeling
+    year: 2021
+    doi: 10.1021/acs.jcim.1c00840

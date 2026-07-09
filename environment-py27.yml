@@ -1,0 +1,16 @@
+# Helper environment: PyPKA shells out to a bare `python2.7` interpreter at
+# runtime (via pdbmender's bundled, vendored pdb2pqr.py) to optimize added
+# hydrogens. No packages beyond the interpreter itself are required.
+#
+# Create it with:
+#   conda env create -f environment-py27.yml
+#
+# You never activate this environment directly — PypKaTools finds
+# `<this-env>/bin/python2.7` automatically and prepends it to PATH for the
+# duration of a run (see pypkatool.core._inject_py27).
+name: py27
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=2.7

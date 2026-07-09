@@ -1,0 +1,16 @@
+# PypKaTools v1.0.0 | engine=PyPKA | epsin=15 | ionicstr=0.1 | pH=7.0
+# protein=lysozyme | date=2026-06-26 | input=lysozyme.pdb
+# Reference: PyPKA DOI 10.1021/acs.jcim.0c00718 | Cross-validation: pKAI+ (ML)
+#
+# Only residues requiring CHARMM-GUI action are listed.
+# Terminal groups (NTR/CTR) and default-state residues are omitted.
+# Full tautomer detail and RTF blocks are in detail.json.
+#
+# PKA_PKAI+: N/P = residue not paired with pKAI+ output
+# ACTION   : RESI = set in PDB Reader | PATCH = Patches panel | TIE = ambiguous
+
+----------------------------------------------------------------------------------------------------
+RESNAME   RESID  CHAIN   PKA_PYPKA    %PROT  %DEPROT   PKA_PKAI+  CHARMM_LABEL    RTF  ACTION
+----------------------------------------------------------------------------------------------------
+HIS          15      A        5.88      6.9     93.1        6.56  HSE             YES  RESI
+----------------------------------------------------------------------------------------------------

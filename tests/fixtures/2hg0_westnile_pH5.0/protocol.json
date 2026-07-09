@@ -1,0 +1,19 @@
+{
+  "tool": "PypKaTools",
+  "engine": "PyPKA",
+  "pypka_version": "2.10.0",
+  "reference": "DOI: 10.1021/acs.jcim.0c00718",
+  "parameters": {
+    "epsin": 15,
+    "ionicstr": 0.1,
+    "pbc_dimensions": 0,
+    "convergence": 0.1,
+    "pH": "0,14",
+    "ncpus": 6,
+    "structure_output": "/media/groponp/Galvani/Scripts/Pypka/scripts/tests/pypkatools_2hg0_westnile_pH5.0/output_pypka/2hg0_protonated_pH5.0.pdb, 5.0, charmm",
+    "titration_output": "/media/groponp/Galvani/Scripts/Pypka/scripts/tests/pypkatools_2hg0_westnile_pH5.0/output_pypka/2hg0_titration.dat"
+  },
+  "input_pdb": "/media/groponp/Galvani/Scripts/Pypka/scripts/tests/2hg0.pdb",
+  "target_ph": 5.0,
+  "generated": "2026-06-26T23:31:03.976248+00:00"
+}
