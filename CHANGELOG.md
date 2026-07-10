@@ -8,6 +8,27 @@ and this project uses [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- `apptainer.def`: Apptainer/Singularity container definition bundling all
+  three conda environments (`pypkatool`/`py27`/`pdbfixer`) into a single
+  reproducible image. `_inject_py27()`/`_find_pdbfixer_python()` now also
+  check `/opt/conda/envs/...` (the container case - Apptainer binds the
+  host's real `$HOME`, so a container-internal env can't live under
+  `~/miniconda3`).
+- `Dockerfile`: same three-environment recipe via Docker, convertible to an
+  Apptainer `.sif` without rebuilding (`apptainer build out.sif
+  docker-daemon://pypkatool:latest`).
+
+### Fixed
+- The container images install `gawk` explicitly. `pdbmender`'s `addHtaut`
+  is a gawk script (`#!/usr/bin/gawk -f`), not a compiled binary -
+  confirmed directly (its file header is the literal shebang text, and
+  `ldd` reports "not a dynamic executable"). The `condaforge/miniforge3`
+  base image ships `mawk` as `/usr/bin/awk` but has no `/usr/bin/gawk` at
+  all, so `addHtaut` failed at exec with a misleading "shared library is
+  likely missing" error from Apptainer. Verified end-to-end after the fix:
+  a full `pypkatool run` inside the built `.sif` reproduces the bare-metal
+  lysozyme HIS15 pKa (6.33) exactly, and `fixstructure` correctly locates
+  the `pdbfixer` env at `/opt/conda/envs/pdbfixer` inside the container.
 - `--select-chains A,B,C` on `fixstructure`: keeps only the listed chains
   (drops every other chain) before repair, for either input mode.
 - `--pdb-id` on `fixstructure`: downloads and repairs a structure directly

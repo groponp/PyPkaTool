@@ -1,0 +1,74 @@
+Bootstrap: docker
+From: condaforge/miniforge3:latest
+
+%files
+    pypkatool /opt/pypkatool/pypkatool
+    pyproject.toml /opt/pypkatool/pyproject.toml
+    README.md /opt/pypkatool/README.md
+    environment.yml /opt/pypkatool/environment.yml
+    environment-py27.yml /opt/pypkatool/environment-py27.yml
+    environment-pdbfixer.yml /opt/pypkatool/environment-pdbfixer.yml
+
+%post
+    set -eu
+
+    # pdbmender's addHtaut is a gawk script (`#!/usr/bin/gawk -f`), not a
+    # compiled binary - confirmed directly (its file header is literally the
+    # shebang text, and `ldd` reports "not a dynamic executable"). The base
+    # image's default `awk` is `mawk`, and `gawk` itself isn't installed at
+    # all, so addHtaut fails at exec with a (misleading) "shared library is
+    # likely missing" error from Apptainer. Every other pdbmender/pdb2pqr
+    # script is invoked by explicit `python2.7 <script>` (see
+    # core.py::_inject_py27), so its own shebang line is never exec'd and
+    # doesn't matter - gawk is the only extra system package needed.
+    apt-get update
+    apt-get install -y --no-install-recommends gawk
+    rm -rf /var/lib/apt/lists/*
+
+    cd /opt/pypkatool
+
+    # Three independent conda envs, exactly as documented in README.md
+    # "Installation" - same reasons apply inside the container: PyPKA's
+    # compiled DelPhi4py backend needs numpy<2 (main env), pdbmender shells
+    # out to a bare python2.7 (py27 env), and PDBFixer/OpenMM need numpy>=2
+    # (pdbfixer env, only used by `fixstructure`). All three land under
+    # /opt/conda/envs/ - core.py's _inject_py27()/_find_pdbfixer_python()
+    # check that path as a fallback specifically for this container case
+    # (Apptainer binds the host's real $HOME by default, so a
+    # container-internal env can't live under ~/miniconda3).
+    mamba env create -f environment.yml
+    mamba env create -f environment-py27.yml
+    mamba env create -f environment-pdbfixer.yml
+
+    /opt/conda/envs/pypkatool/bin/pip install --no-cache-dir .
+
+    mamba clean -afy
+
+%environment
+    export PATH=/opt/conda/envs/pypkatool/bin:$PATH
+
+%runscript
+    exec pypkatool "$@"
+
+%labels
+    Author Ropón-Palacios G.
+    Software pypkatool
+    Version 1.0.0
+
+%help
+    pypkatool - PyPKA pKa results to CHARMM-GUI protonation states,
+    cross-validated against pKAI+.
+
+    Build:
+        apptainer build --fakeroot pypkatool.sif apptainer.def
+
+    Usage:
+        apptainer run pypkatool.sif run my_protein.pdb --pH 7.0
+        apptainer run pypkatool.sif fixstructure --pdb-id 7A3S --outdir results/
+        apptainer run pypkatool.sif reprocess results/ --pH 6.0
+
+    Bind-mount your working directory if your input PDBs aren't already
+    under $HOME (Apptainer binds $HOME by default, but not arbitrary paths):
+        apptainer run --bind /data:/data pypkatool.sif run /data/my_protein.pdb --pH 7.0
+
+    See https://github.com/groponp/PyPkaTool for full documentation.

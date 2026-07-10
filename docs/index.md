@@ -16,6 +16,7 @@ This site is the full manual and API reference.
 :caption: Contents
 
 installation
+container
 usage
 force_field
 tautomer_mapping

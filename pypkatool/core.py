@@ -383,13 +383,18 @@ def _inject_py27() -> None:
     conda environment named ``py27`` (created via ``environment-py27.yml``,
     see the project README) under the current user's home directory, or
     ``$HOME``, and prepends its ``bin/`` to ``PATH`` for the current process.
-    A no-op if ``python2.7`` is already resolvable.
+    Also checks ``/opt/conda/envs/py27`` (the container case: Apptainer
+    binds the host's real ``$HOME`` into the container by default, so a
+    container-internal env can't live under ``~/miniconda3`` - see
+    ``apptainer.def``, which installs conda at ``/opt/conda``). A no-op if
+    ``python2.7`` is already resolvable.
     """
     import shutil
     if shutil.which("python2.7"): return
     for d in [Path.home() / "miniconda3/envs/py27/bin",
               Path.home() / "anaconda3/envs/py27/bin",
-              Path(os.environ.get("HOME","/root")) / "miniconda3/envs/py27/bin"]:
+              Path(os.environ.get("HOME","/root")) / "miniconda3/envs/py27/bin",
+              Path("/opt/conda/envs/py27/bin")]:
         if (d / "python2.7").exists():
             os.environ["PATH"] = str(d) + ":" + os.environ.get("PATH","")
             return
@@ -407,9 +412,13 @@ def _find_pdbfixer_python() -> str:
 
     Looks for a conda environment named ``pdbfixer`` (see
     ``environment-pdbfixer.yml`` / the project README "Repairing fragmented
-    structures") under common conda roots. pdbfixer/OpenMM require numpy>=2,
-    which conflicts with delphi4py's numpy<2 pin, so this always runs as a
-    separate interpreter rather than an in-process import.
+    structures") under common conda roots, including ``/opt/conda/envs/pdbfixer``
+    (the container case: Apptainer binds the host's real ``$HOME`` into the
+    container by default, so a container-internal env can't live under
+    ``~/miniconda3`` - see ``apptainer.def``, which installs conda at
+    ``/opt/conda``). pdbfixer/OpenMM require numpy>=2, which conflicts with
+    delphi4py's numpy<2 pin, so this always runs as a separate interpreter
+    rather than an in-process import.
 
     :returns: Path to the ``python`` executable inside the ``pdbfixer`` env.
     :rtype: str
@@ -417,7 +426,8 @@ def _find_pdbfixer_python() -> str:
     """
     for d in [Path.home() / "miniconda3/envs/pdbfixer/bin",
               Path.home() / "anaconda3/envs/pdbfixer/bin",
-              Path(os.environ.get("HOME","/root")) / "miniconda3/envs/pdbfixer/bin"]:
+              Path(os.environ.get("HOME","/root")) / "miniconda3/envs/pdbfixer/bin",
+              Path("/opt/conda/envs/pdbfixer/bin")]:
         if (d / "python").exists():
             return str(d / "python")
     sys.exit(

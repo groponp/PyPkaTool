@@ -100,6 +100,37 @@ conda activate pypkatool
 pypkatool run my_protein.pdb --pH 7.0
 ```
 
+## Container (Apptainer / Docker)
+
+For reproducibility (HPC clusters, CI, sharing an exact environment), the
+three conda environments above are bundled into a single container image
+instead. [`apptainer.def`](apptainer.def) is the native definition:
+
+```bash
+apptainer build --fakeroot pypkatool.sif apptainer.def
+apptainer run pypkatool.sif run my_protein.pdb --pH 7.0
+apptainer run pypkatool.sif fixstructure --pdb-id 7A3S --outdir results/
+```
+
+Apptainer binds your `$HOME` into the container by default, but not
+arbitrary paths - bind-mount your data directory explicitly if your input
+PDBs live elsewhere:
+
+```bash
+apptainer run --bind /data:/data pypkatool.sif run /data/my_protein.pdb --pH 7.0
+```
+
+[`Dockerfile`](Dockerfile) builds the same three-environment image via
+Docker instead (useful for CI or Docker Hub distribution), and can be
+converted to an Apptainer `.sif` without rebuilding from source:
+
+```bash
+docker build -t pypkatool .
+apptainer build pypkatool.sif docker-daemon://pypkatool:latest
+# or, from an already-pushed image:
+apptainer build pypkatool.sif docker://<user>/pypkatool:latest
+```
+
 ## Usage
 
 ```bash
@@ -430,6 +461,8 @@ docstrings; `docs/conf.py` stubs out the `pkai` import-time check
 ├── environment.yml            Main conda environment (Python 3.10 + PyPKA + pKAI)
 ├── environment-py27.yml       Python 2.7 helper environment (PyPKA internal dependency)
 ├── environment-pdbfixer.yml   PDBFixer/OpenMM helper environment (fixstructure command)
+├── apptainer.def              Apptainer/Singularity container definition (all 3 envs bundled)
+├── Dockerfile                 Same recipe via Docker (convertible to Apptainer .sif)
 ├── pyproject.toml             Package metadata + `pypkatool` console script
 ├── CITATION.cff               Citation metadata (GitHub "Cite this repository" button)
 └── CHANGELOG.md                Notable changes, by version (Keep a Changelog format)
