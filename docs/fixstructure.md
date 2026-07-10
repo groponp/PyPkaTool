@@ -23,8 +23,8 @@ never part of the deposited structure:
    convention as a standard deposited PDB (and the form PyPKA's own cleaning
    step expects as input).
 4. **Only the protein (and DNA/RNA, if present) is kept by default.**
-   Waters, ions, ligands, and any other heterogen are dropped - pass
-   `--keep-heterogens` to keep them. This is independent of the atom/gap
+   Waters, ions, ligands, and any other hetatom are dropped - pass
+   `--keep-hetatoms` to keep them. This is independent of the atom/gap
    repair above; it just controls what ends up in the output file.
 
 | Input residue state | Chain position | Result |
@@ -60,11 +60,18 @@ cryoprotectant/buffer ions, and bound ligands or glycans (`HETATM` records
 that are not part of the protein/DNA/RNA polymer). `fixstructure` drops all
 of these by default, keeping only the repaired protein - the intent is a
 clean structure ready for `pypkatool run`, not a faithful copy of everything
-in the deposition. Pass `--keep-heterogens` to keep them instead:
+in the deposition. Pass `--keep-hetatoms` to keep them instead:
 
 ```bash
-pypkatool fixstructure --pdb-id 7A3S --keep-heterogens --outdir results/
+pypkatool fixstructure --pdb-id 7A3S --keep-hetatoms --outdir results/
 ```
+
+Hetatoms are dropped *after* `--select-chains` is applied, so a kept
+hetatom is always scoped to a chain you actually kept - one belonging to a
+chain you dropped is already gone by the time `--keep-hetatoms` would
+otherwise have preserved it. Verified on 7A3S: `--select-chains B,C
+--keep-hetatoms` keeps exactly the 133 `HETATM` records that belong to
+chains B/C (68 + 65), and none of chain A's.
 
 AlphaFold2/ColabFold predictions are heavy-atom-only (no hydrogens) and, for
 the residue range you gave the model, have no internal gaps or missing
@@ -116,5 +123,7 @@ first present residue in its chain (N-terminal gap), and
 called, so only strictly internal gaps (`0 < position < len(...)`) get
 rebuilt. `--select-chains` is implemented with PDBFixer's own
 `removeChains(chainIds=...)`, applied before gap/atom detection. Dropping
-heterogens (the default) uses PDBFixer's own
-`removeHeterogens(keepWater=False)`.
+hetatoms (the default) uses PDBFixer's own `removeHeterogens(keepWater=False)`,
+applied right after chain selection - which is what scopes a kept hetatom
+(`--keep-hetatoms`) to the selected chains: `removeChains()` has already
+dropped every hetatom belonging to a removed chain by that point.

@@ -148,7 +148,7 @@ Exactly one of `--pdb-file`/`--pdb-id` is required.
 | `--pdb-id` | - | 4-char RCSB code to download and repair instead of a local file - always carries the official `SEQRES` (see ["Repairing fragmented structures"](#repairing-fragmented-structures)) |
 | `--outdir` | `--pdb-file`'s parent directory, or cwd for `--pdb-id` | Where to write `<stem-or-pdb_id>_fixed.pdb` |
 | `--select-chains` | all chains kept | Comma-separated chain IDs to keep (e.g. `A,B,C`); every other chain is dropped before repair |
-| `--keep-heterogens` | off | Keep waters/ions/ligands/other non-polymer `HETATM` records; by default they are dropped (protein/DNA/RNA only) |
+| `--keep-hetatoms` | off | Keep waters/ions/ligands/other non-polymer `HETATM` records, scoped to whatever `--select-chains` kept; by default they are dropped (protein/DNA/RNA only) |
 
 ## Force field parameters used for the PB+MC calculation
 
@@ -256,8 +256,8 @@ never part of the deposited structure:
    convention as a standard deposited PDB (and the form PyPKA's own cleaning
    step expects as input).
 4. **Only the protein (and DNA/RNA, if present) is kept by default.**
-   Waters, ions, ligands, and any other heterogen are dropped - pass
-   `--keep-heterogens` to keep them. This is independent of the atom/gap
+   Waters, ions, ligands, and any other hetatom are dropped - pass
+   `--keep-hetatoms` to keep them. This is independent of the atom/gap
    repair above; it just controls what ends up in the output file.
 
 | Input residue state | Chain position | Result |
@@ -290,11 +290,18 @@ cryoprotectant/buffer ions, and bound ligands or glycans (`HETATM` records
 that are not part of the protein/DNA/RNA polymer). `fixstructure` drops all
 of these by default, keeping only the repaired protein - the intent is a
 clean structure ready for `pypkatool run`, not a faithful copy of everything
-in the deposition. Pass `--keep-heterogens` to keep them instead:
+in the deposition. Pass `--keep-hetatoms` to keep them instead:
 
 ```bash
-pypkatool fixstructure --pdb-id 7A3S --keep-heterogens --outdir results/
+pypkatool fixstructure --pdb-id 7A3S --keep-hetatoms --outdir results/
 ```
+
+Hetatoms are dropped *after* `--select-chains` is applied, so a kept
+hetatom is always scoped to a chain you actually kept - one belonging to a
+chain you dropped is already gone by the time `--keep-hetatoms` would
+otherwise have preserved it. Verified on 7A3S: `--select-chains B,C
+--keep-hetatoms` keeps exactly the 133 `HETATM` records that belong to
+chains B/C (68 + 65), and none of chain A's.
 
 AlphaFold2/ColabFold predictions are heavy-atom-only (no hydrogens) and, for
 the residue range you gave the model, have no internal gaps or missing

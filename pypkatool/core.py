@@ -428,7 +428,7 @@ def _find_pdbfixer_python() -> str:
 
 def fix_structure(outdir: Path, pdb_file: Path | None = None, pdb_id: str | None = None,
                    select_chains: list[str] | None = None,
-                   keep_heterogens: bool = False) -> Path:
+                   keep_hetatoms: bool = False) -> Path:
     """Repair a structurally incomplete PDB using PDBFixer, before feeding it to PyPKA.
 
     Delegates to :data:`_FIXSTRUCTURE_WORKER`, run under
@@ -442,11 +442,13 @@ def fix_structure(outdir: Path, pdb_file: Path | None = None, pdb_id: str | None
       deposited construct actually starts/ends, not damage to repair;
     * never adds hydrogens, so the output stays heavy-atom-only like a
       standard deposited PDB;
-    * by default, drops every heterogen (waters, ions, ligands, and any
-      other non-polymer ``HETATM``) via PDBFixer's own
+    * by default, drops every hetatom (waters, ions, ligands, and any
+      other non-polymer ``HETATM`` record) via PDBFixer's own
       ``removeHeterogens(keepWater=False)``, keeping only the repaired
-      protein (and DNA/RNA, if present) - pass ``keep_heterogens=True`` to
-      keep them instead.
+      protein (and DNA/RNA, if present) - pass ``keep_hetatoms=True`` to
+      keep them instead, scoped to whatever ``select_chains`` kept (a
+      hetatom belonging to a dropped chain is already gone by the time
+      this runs, since chain selection happens first).
 
     Exactly one of ``pdb_file`` (repair a local file as-is) or ``pdb_id``
     (download the structure directly from RCSB, which always carries the
@@ -473,9 +475,9 @@ def fix_structure(outdir: Path, pdb_file: Path | None = None, pdb_id: str | None
     :param select_chains: If given, keep only these chain IDs in the output
         (e.g. ``["A", "B"]``); every other chain is dropped before repair.
     :type select_chains: list[str] | None
-    :param keep_heterogens: Keep waters/ions/ligands/other non-polymer
+    :param keep_hetatoms: Keep waters/ions/ligands/other non-polymer
         ``HETATM`` records in the output instead of dropping them.
-    :type keep_heterogens: bool
+    :type keep_hetatoms: bool
     :returns: Path to the repaired PDB (``<stem-or-pdb_id>_fixed.pdb``).
     :rtype: pathlib.Path
     :raises SystemExit: if the ``pdbfixer`` environment is missing, or the
@@ -491,8 +493,8 @@ def fix_structure(outdir: Path, pdb_file: Path | None = None, pdb_id: str | None
     cmd += ["--pdb-file", str(pdb_file)] if pdb_file else ["--pdb-id", pdb_id]
     if select_chains:
         cmd += ["--select-chains", ",".join(select_chains)]
-    if keep_heterogens:
-        cmd += ["--keep-heterogens"]
+    if keep_hetatoms:
+        cmd += ["--keep-hetatoms"]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         sys.exit(f"fixstructure failed:\n{result.stderr}")
@@ -503,7 +505,7 @@ def fix_structure(outdir: Path, pdb_file: Path | None = None, pdb_id: str | None
         return out_pdb
     print(f"  internal_residues_added: {summary.get('internal_residues_added')}")
     print(f"  residues_with_missing_atoms_filled: {summary.get('residues_with_missing_atoms_filled')}")
-    print(f"  heterogens_removed: {summary.get('heterogens_removed')}")
+    print(f"  hetatoms_removed: {summary.get('hetatoms_removed')}")
     if summary.get("terminal_gaps_left_untouched"):
         print(f"  terminal_gaps_left_untouched: {summary['terminal_gaps_left_untouched']}")
     return out_pdb
@@ -1884,7 +1886,7 @@ def cmd_fixstructure(args: argparse.Namespace) -> None:
     """Entry point for ``pypkatool fixstructure``: repair a PDB with PDBFixer.
 
     :param args: Parsed CLI arguments (``pdb_file``, ``pdb_id``, ``outdir``,
-        ``select_chains``, ``keep_heterogens``).
+        ``select_chains``, ``keep_hetatoms``).
     :type args: argparse.Namespace
     :rtype: None
     """
@@ -1894,7 +1896,7 @@ def cmd_fixstructure(args: argparse.Namespace) -> None:
     label = pdb_file.name if pdb_file else f"RCSB {args.pdb_id}"
     print(f"\n{'='*60}\npypkatool fixstructure | {label}\n{'='*60}")
     out_pdb = fix_structure(outdir, pdb_file=pdb_file, pdb_id=args.pdb_id, select_chains=select_chains,
-                             keep_heterogens=args.keep_heterogens)
+                             keep_hetatoms=args.keep_hetatoms)
     print(f"\nDone. Repaired PDB: {out_pdb}")
 
 
@@ -1940,9 +1942,10 @@ def main() -> None:
     fs.add_argument("--select-chains", dest="select_chains", default=None,
         help="Comma-separated chain IDs to keep, e.g. A,B,C. Every other "
              "chain is dropped before repair.")
-    fs.add_argument("--keep-heterogens", dest="keep_heterogens", action="store_true",
-        help="Keep waters, ions, ligands, and other non-polymer HETATM records "
-             "in the output. By default they are dropped (protein/DNA/RNA only).")
+    fs.add_argument("--keep-hetatoms", dest="keep_hetatoms", action="store_true",
+        help="Keep waters, ions, ligands, and other non-polymer HETATM records in the "
+             "output (scoped to whatever --select-chains kept, if given). By default "
+             "they are dropped (protein/DNA/RNA only).")
 
     args = p.parse_args()
     if args.command == "run": cmd_run(args)
