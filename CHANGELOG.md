@@ -8,22 +8,32 @@ and this project uses [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-- `--pdbid` flag on `fixstructure`: fetches the deposited `SEQRES` from
-  RCSB as a reference sequence for internal-gap detection, for PDBs that
-  have no `SEQRES` records of their own (confirmed: without this,
-  PDBFixer's `findMissingResidues()` has nothing to compare the chain
-  against and silently repairs 0 internal gaps, even real ones).
+- `--select-chains A,B,C` on `fixstructure`: keeps only the listed chains
+  (drops every other chain) before repair, for either input mode.
+- `--pdb-id` on `fixstructure`: downloads and repairs a structure directly
+  from RCSB instead of a local file. Always carries the official `SEQRES`,
+  so internal-gap detection is reliable by construction.
 
 ### Changed
+- **Breaking**: `fixstructure`'s input is now `--pdb-file <path>` or
+  `--pdb-id <code>` (exactly one required) instead of a single positional
+  PDB path. The previous `--pdbid` flag (which only fetched a reference
+  sequence alongside a separately-given local file) is replaced by this
+  cleaner two-source design.
 - **Breaking**: the `--ph` flag on `run` and `reprocess` is renamed to
   `--pH` (matching standard pKa/pH notation). Scripts calling `pypkatool`
   need updating; the old lowercase `--ph` is no longer accepted.
 
 ### Fixed
-- `fixstructure` now prints an explicit `WARNING` when it cannot detect
-  internal gaps at all (no `SEQRES` and no `--pdbid`), instead of silently
-  reporting `internal_residues_added: 0` with no indication that this
-  might mean "couldn't check" rather than "nothing missing".
+- `fixstructure` now refuses to write any output (hard error, not a
+  warning) when it has no reference sequence to detect internal gaps
+  against (no `SEQRES` in the input and `--pdb-file` was used instead of
+  `--pdb-id`) - previously it silently reported
+  `internal_residues_added: 0`, indistinguishable from "genuinely nothing
+  was missing". Confirmed on a real case (RCSB 7A3S with SEQRES stripped):
+  without a reference sequence, real internal gaps in chains B/C went
+  undetected and silently unrepaired; with `--pdb-id 7A3S` they were
+  correctly found and rebuilt.
 
 ## [1.0.0] - 2026-07-09
 

@@ -113,10 +113,13 @@ pypkatool run my_protein.pdb --pH 5.0 --outdir results/ --ncpus 8 --epsin 15
 # PyPKA output, without rerunning the expensive PB+MC step
 pypkatool reprocess results/ --pH 6.0 --pdb my_protein.pdb
 
-# Repair a structurally incomplete PDB first, then feed the repaired
+# Repair a structurally incomplete local PDB first, then feed the repaired
 # structure into the normal pipeline (see "Repairing fragmented structures")
-pypkatool fixstructure my_protein.pdb --outdir results/
+pypkatool fixstructure --pdb-file my_protein.pdb --outdir results/
 pypkatool run results/my_protein_fixed.pdb --pH 7.0
+
+# Or download and repair directly from RCSB, keeping only chains A and B
+pypkatool fixstructure --pdb-id 7A3S --select-chains A,B --outdir results/
 ```
 
 Try it on the bundled example:
@@ -137,11 +140,14 @@ pypkatool run examples/denv2.pdb --pH 5.0
 
 ### `fixstructure` options
 
+Exactly one of `--pdb-file`/`--pdb-id` is required.
+
 | Flag | Default | Meaning |
 |---|---|---|
-| `pdb` | *(required)* | Input structure to repair |
-| `--outdir` | input PDB's parent directory | Where to write `<stem>_fixed.pdb` |
-| `--pdbid` | off | 4-char RCSB code to fetch a reference sequence from, for detecting internal chain gaps in a PDB with no `SEQRES` records (see ["Repairing fragmented structures"](#repairing-fragmented-structures)) |
+| `--pdb-file` | - | Local PDB file to repair as-is |
+| `--pdb-id` | - | 4-char RCSB code to download and repair instead of a local file - always carries the official `SEQRES` (see ["Repairing fragmented structures"](#repairing-fragmented-structures)) |
+| `--outdir` | `--pdb-file`'s parent directory, or cwd for `--pdb-id` | Where to write `<stem-or-pdb_id>_fixed.pdb` |
+| `--select-chains` | all chains kept | Comma-separated chain IDs to keep (e.g. `A,B,C`); every other chain is dropped before repair |
 
 ## Force field parameters used for the PB+MC calculation
 
@@ -255,11 +261,22 @@ never part of the deposited structure:
 | Completely absent (gap in numbering) | Internal (residues present on both sides) | Residue rebuilt |
 | Completely absent (gap in numbering) | At the start or end of a chain | Left untouched - chain is not extended |
 
+Exactly one of `--pdb-file` or `--pdb-id` is required:
+
 ```bash
-pypkatool fixstructure my_protein.pdb --outdir results/
+# Repair a local file as-is
+pypkatool fixstructure --pdb-file my_protein.pdb --outdir results/
 # -> results/my_protein_fixed.pdb
+
+# Download directly from RCSB and repair that instead
+pypkatool fixstructure --pdb-id 7A3S --outdir results/
+# -> results/7A3S_fixed.pdb
+
 pypkatool run results/my_protein_fixed.pdb --pH 7.0
 ```
+
+`--select-chains A,B,C` keeps only the listed chains (everything else is
+dropped) before repair, for either input mode.
 
 AlphaFold2/ColabFold predictions are heavy-atom-only (no hydrogens) and, for
 the residue range you gave the model, have no internal gaps or missing
@@ -267,31 +284,29 @@ atoms by construction - `fixstructure` is normally unnecessary for them.
 It is intended for experimentally determined structures with genuine
 crystallographic disorder or truncated regions.
 
-### Internal gaps require a reference sequence - `--pdbid`
+### Internal gaps require a reference sequence - why `--pdb-file` can refuse to run
 
 Detecting an internal gap means comparing the chain's actual residues
 against what *should* be there, and PDBFixer's `findMissingResidues()` gets
-that reference sequence only from `SEQRES` records in the input PDB. A PDB
-with no `SEQRES` (common for hand-edited or programmatically stripped test
-files) gives PDBFixer nothing to compare against - confirmed directly:
-`PDBFixer(filename=...).sequences` is `[]` on such a file, and
-`findMissingResidues()` returns `{}` regardless of how many residues are
-actually missing. **This means `fixstructure` silently reports 0 internal
-gaps repaired on a `SEQRES`-less PDB, even when real gaps are present** - it
-now also prints an explicit `WARNING` in that situation so this isn't
-mistaken for "nothing was missing".
+that reference sequence only from `SEQRES` records. A PDB with no `SEQRES`
+(common for hand-edited or programmatically stripped files) gives PDBFixer
+nothing to compare against - confirmed directly: `PDBFixer(filename=...).sequences`
+is `[]` on such a file, and `findMissingResidues()` returns `{}` regardless
+of how many residues are actually missing.
 
-If the structure has a deposited RCSB entry, pass its 4-character code with
-`--pdbid`: this fetches the deposited `SEQRES` from RCSB and uses it as the
-reference sequence for gap detection, while the atoms/coordinates being
-repaired still come entirely from your local file. Requires network access,
-and can take on the order of a minute for a large entry (PDBFixer fetches
-the full deposited structure to derive the sequence, not just a
-lightweight SEQRES query).
+Rather than silently report "0 gaps repaired" in that situation - easy to
+mistake for "there was nothing to fix", especially for someone new to the
+tool - **`fixstructure` refuses to write any output at all** when it has no
+reference sequence to check against, with an explicit error naming the
+problem. This is a hard stop, not a warning: a PDB that *looks* repaired
+but might still be silently missing internal residues is worse than an
+error message telling you it can't be verified.
 
-```bash
-pypkatool fixstructure my_fragment.pdb --outdir results/ --pdbid 7A3S
-```
+The fix is `--pdb-id` instead of `--pdb-file`: downloading directly from
+RCSB always carries the official `SEQRES`, so gap detection is reliable by
+construction. Requires network access, and can take on the order of a
+minute for a large entry (PDBFixer fetches the full deposited structure to
+derive the sequence, not just a lightweight SEQRES query).
 
 ## Failure modes
 

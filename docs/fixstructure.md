@@ -29,11 +29,25 @@ never part of the deposited structure:
 | Completely absent (gap in numbering) | Internal (residues present on both sides) | Residue rebuilt |
 | Completely absent (gap in numbering) | At the start or end of a chain | Left untouched - chain is not extended |
 
+## Two input modes
+
+Exactly one of `--pdb-file` or `--pdb-id` is required:
+
 ```bash
-pypkatool fixstructure my_protein.pdb --outdir results/
+# Repair a local file as-is
+pypkatool fixstructure --pdb-file my_protein.pdb --outdir results/
 # -> results/my_protein_fixed.pdb
+
+# Download directly from RCSB and repair that instead
+pypkatool fixstructure --pdb-id 7A3S --outdir results/
+# -> results/7A3S_fixed.pdb
+
 pypkatool run results/my_protein_fixed.pdb --pH 7.0
 ```
+
+`--select-chains A,B,C` keeps only the listed chains (everything else is
+dropped) before repair, for either input mode - useful for a large
+multi-copy deposition where only some chains/subunits are wanted.
 
 AlphaFold2/ColabFold predictions are heavy-atom-only (no hydrogens) and, for
 the residue range you gave the model, have no internal gaps or missing
@@ -41,27 +55,30 @@ atoms by construction - `fixstructure` is normally unnecessary for them.
 It is intended for experimentally determined structures with genuine
 crystallographic disorder or truncated regions.
 
-## Internal gaps require a reference sequence - `--pdbid`
+## Internal gaps require a reference sequence - why `--pdb-file` can refuse to run
 
 Detecting an internal gap means comparing the chain's actual residues
 against what *should* be there, and PDBFixer's `findMissingResidues()` gets
-that reference sequence only from `SEQRES` records in the input PDB. A PDB
-with no `SEQRES` (common for hand-edited or programmatically stripped test
-files) gives PDBFixer nothing to compare against - confirmed directly:
-`PDBFixer(filename=...).sequences` is `[]` on such a file, and
-`findMissingResidues()` returns `{}` regardless of how many residues are
-actually missing. **This means `fixstructure` silently reports 0 internal
-gaps repaired on a `SEQRES`-less PDB, even when real gaps are present** - it
-now also prints an explicit `WARNING` in that situation so this isn't
-mistaken for "nothing was missing".
+that reference sequence only from `SEQRES` records. A PDB with no `SEQRES`
+(common for hand-edited or programmatically stripped files) gives PDBFixer
+nothing to compare against - confirmed directly: `PDBFixer(filename=...).sequences`
+is `[]` on such a file, and `findMissingResidues()` returns `{}` regardless
+of how many residues are actually missing.
 
-If the structure has a deposited RCSB entry, pass its 4-character code with
-`--pdbid`: this fetches the deposited `SEQRES` from RCSB and uses it as the
-reference sequence for gap detection, while the atoms/coordinates being
-repaired still come entirely from your local file.
+Rather than silently report "0 gaps repaired" in that situation - easy to
+mistake for "there was nothing to fix", especially for someone new to the
+tool - **`fixstructure` refuses to write any output at all** when it has no
+reference sequence to check against, with an explicit error naming the
+problem. This is a hard stop, not a warning: a PDB that *looks* repaired
+but might still be silently missing internal residues is worse than an
+error message telling you it can't be verified.
+
+The fix is `--pdb-id` instead of `--pdb-file`: downloading directly from
+RCSB always carries the official `SEQRES`, so gap detection is reliable by
+construction - there is no local-file/no-`SEQRES` case to worry about.
 
 ```bash
-pypkatool fixstructure my_fragment.pdb --outdir results/ --pdbid 7A3S
+pypkatool fixstructure --pdb-id 7A3S --outdir results/
 ```
 
 Requires network access, and can take on the order of a minute for a large
@@ -80,4 +97,5 @@ first present residue in its chain (N-terminal gap), and
 `position == len(present_residues_in_chain)` is after the last one
 (C-terminal gap) - both are filtered out before `addMissingAtoms()` is
 called, so only strictly internal gaps (`0 < position < len(...)`) get
-rebuilt.
+rebuilt. `--select-chains` is implemented with PDBFixer's own
+`removeChains(chainIds=...)`, applied before gap/atom detection.

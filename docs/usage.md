@@ -11,10 +11,13 @@ pypkatool run my_protein.pdb --pH 5.0 --outdir results/ --ncpus 8 --epsin 15
 # PyPKA output, without rerunning the expensive PB+MC step
 pypkatool reprocess results/ --pH 6.0 --pdb my_protein.pdb
 
-# Repair a structurally incomplete PDB first, then feed the repaired
+# Repair a structurally incomplete local PDB first, then feed the repaired
 # structure into the normal pipeline (see "Repairing fragmented structures")
-pypkatool fixstructure my_protein.pdb --outdir results/
+pypkatool fixstructure --pdb-file my_protein.pdb --outdir results/
 pypkatool run results/my_protein_fixed.pdb --pH 7.0
+
+# Or download and repair directly from RCSB, keeping only chains A and B
+pypkatool fixstructure --pdb-id 7A3S --select-chains A,B --outdir results/
 ```
 
 Try it on the bundled example:
@@ -44,8 +47,11 @@ pypkatool run examples/denv2.pdb --pH 5.0
 
 ## `fixstructure` options
 
+Exactly one of `--pdb-file`/`--pdb-id` is required.
+
 | Flag | Default | Meaning |
 |---|---|---|
-| `pdb` | *(required)* | Input structure to repair |
-| `--outdir` | input PDB's parent directory | Where to write `<stem>_fixed.pdb` |
-| `--pdbid` | off | 4-char RCSB code to fetch a reference sequence from, for detecting internal chain gaps in a PDB with no `SEQRES` records (see {doc}`fixstructure`) |
+| `--pdb-file` | - | Local PDB file to repair as-is |
+| `--pdb-id` | - | 4-char RCSB code to download and repair instead of a local file - always carries the official `SEQRES` (see {doc}`fixstructure`) |
+| `--outdir` | `--pdb-file`'s parent directory, or cwd for `--pdb-id` | Where to write `<stem-or-pdb_id>_fixed.pdb` |
+| `--select-chains` | all chains kept | Comma-separated chain IDs to keep (e.g. `A,B,C`); every other chain is dropped before repair |
