@@ -7,6 +7,8 @@ and this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-07-12
+
 ### Added
 - `apptainer.def`: Apptainer/Singularity container definition bundling all
   three conda environments (`pypkatool`/`py27`/`pdbfixer`) into a single
